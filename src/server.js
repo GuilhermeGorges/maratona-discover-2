@@ -8,6 +8,11 @@ server.set('view engine', 'ejs')
 // habilitar arquivos statics
 server.use(express.static("public"))
 
+// usar o req.body 
+// habilitar o post do job
+
+server.use(express.urlencoded({ extended: true }))
+
 // routes
 server.use(routes)
 
