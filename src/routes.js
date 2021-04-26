@@ -1,94 +1,126 @@
-// biblioteca para criar o servidor 
-const express = require('express');
-// é uma parte do express que vai criar os caminhos 
-const routes = express.Router()
-// caminho base para o views
-const views = __dirname + "/views/"
-// criando um novo perfil 
-const profile = {
-  name: "Guilherme",
-  avatar: "https://github.com/GuilhermeGorges.png",
-  "monthly-budget": 3000,
-  "days-per-week": 5,
-  "hours-per-day": 5,
-  "vacation-per-day": 4,
-  "value-hour": 75
-}
-//array que armazena os dados vindos do req.body
-const jobs = [
-  {
-    id: 1,
-    name: "Pizzaria Gulozo",
-    "daily-hours": 2,
-    "total-hours": 3,
-    created_at: Date.now(),
+const express = require('express');// biblioteca para criar o servidor 
+const routes = express.Router();// é uma parte do express que vai criar os caminhos 
+const views = __dirname + "/views/";// caminho base para o views
+
+const Profile = {// criando um novo perfil 
+  data: {
+    name: "Guilherme",
+    avatar: "https://github.com/GuilhermeGorges.png",
+    "monthly-budget": 3000,
+    "days-per-week": 5,
+    "hours-per-day": 5,
+    "vacation-per-day": 4,
+    "value-hour": 75
   },
-  {
-    id: 2,
-    name: "Projexo X",
-    "daily-hours": 3,
-    "total-hours": 47,
-    created_at: Date.now(),
-  }
-]
+  controllers: {
+    index(req, res) {
+      return res.render(views + "profile", { profile: Profile.data })
+    },
+    update(req, res) {
+      // req body para pegar os dados 
+      const data = req.body
+      // definir quantas semanas tem em um ano 
+      const weeksPerYear = 52
+      // remover as semanas de férias do ano, para pegar quantas semanas tem em um mes
+      const weeksPerMonth = (weeksPerYear - data["vacation-per-year"]) / 12
+      // total de horas trabalhadas na semana 
+      const weekTotalHours = data["hours-per-day"] * data["days-per-week"]
+      // horas trabalhadas no mes 
+      const monthTotalHours = weekTotalHours * weeksPerMonth
+      // qual será o valor da minha hora?
+      const valueHour = data["value-hour"] = data["monthly-budget"] / monthTotalHours
 
-function remainingDays(job) {
-  // function que calcula quantos dias restam para a entrega do projeto 
-  // calculo de tempo restante
-  const remainingDays = (job["total-hours"] / job["daily-hours"]).toFixed() // .toFixed() arredondamento do resultado 
+      Profile.data = {
+        ...Profile.data,
+        ...req.body,
+        "value-hour": valueHour,
+      }
 
-  const createdDate = new Date(job.created_at)
-  const dueDay = createdDate.getDate() + Number(remainingDays)
-  const dueDateInMs = createdDate.setDate(dueDay)
-
-  const timeDiffInMs = dueDateInMs - Date.now()
-  // transformar Ms em remainingDays
-  const dayInMs = 1000 * 60 * 60 * 24
-  const dayDiff = Math.floor(timeDiffInMs / dayInMs)
-
-  // restam x days 
-  return dayDiff
+      return res.redirect('/profile')
+    },
+  },
 }
 
-
-routes.get('/', (req, res) => {
-  // req, res
-
-  const updatedJobs = jobs.map((job) => {
-    // .map() pega cada item no estilo for each e retorna um item novo 
-    // ajustes no job
-    const remaining = remainingDays(job)
-    const status = remaining <= 0 ? 'done' : 'progress'  //if ternário para retornar o status 
-
-    return {
-      ...job,
-      remaining,
-      status,
-      budget: profile["value-hour"] * job["total-hours"],
+const Job = {
+  data: [
+    //array que armazena os dados vindos do req.body
+    {
+      id: 1,
+      name: "Pizzaria Gulozo",
+      "daily-hours": 2,
+      "total-hours": 0,
+      created_at: Date.now(),
+    },
+    {
+      id: 2,
+      name: "Projexo X",
+      "daily-hours": 3,
+      "total-hours": 47,
+      created_at: Date.now(),
     }
-  })
 
-  return res.render(views + "index", { jobs: updatedJobs })
+  ],
+  controllers: {
+    index(req, res) {
+      const updatedJobs = Job.data.map((job) => {
+        // .map() pega cada item no estilo for each e retorna um item novo 
+        // ajustes no job
+        const remaining = Job.services.remainingDays(job)
+        const status = remaining <= 0 ? 'done' : 'progress'  //if ternário para retornar o status 
+        return {
+          ...job,
+          remaining,
+          status,
+          budget: Profile.data["value-hour"] * job["total-hours"],
+        }
+      })
 
-})
+      return res.render(views + "index", { jobs: updatedJobs })
+    },
+    create(req, res) {
+      return res.render(views + "job")
+    },
+    save(req, res) {
+      // estrutura do dado vindo do req.body => { name: 'asd', 'daily-hours': '0.4', 'total-hours': '3' }
+      const lastId = Job.data[Job.data.length - 1]?.id || 1;
 
+      Job.data.push({
+        id: lastId + 1,
+        name: req.body.name,
+        "daily-hours": req.body["daily-hours"],
+        "total-hours": req.body["total-hours"],
+        created_at: Date.now() // atribuindo data de hoje
+      })
+      return res.redirect('/')
+    },
+  },
+  services: {
+    remainingDays(job) {
+      // function que calcula quantos dias restam para a entrega do projeto 
+      // calculo de tempo restante
+      const remainingDays = (job["total-hours"] / job["daily-hours"]).toFixed() // .toFixed() arredondamento do resultado 
+
+      const createdDate = new Date(job.created_at)
+      const dueDay = createdDate.getDate() + Number(remainingDays)
+      const dueDateInMs = createdDate.setDate(dueDay)
+
+      const timeDiffInMs = dueDateInMs - Date.now()
+      // transformar Ms em remainingDays
+      const dayInMs = 1000 * 60 * 60 * 24
+      const dayDiff = Math.floor(timeDiffInMs / dayInMs)
+
+      // restam x days 
+      return dayDiff
+    }
+  }
+}
+
+routes.get('/', Job.controllers.index)
+routes.get('/job', Job.controllers.create)
+routes.post('/job', Job.controllers.save)// rota para recebimento do post na page job, (SALVAR) button. 
 routes.get('/job/edit', (req, res) => res.render(views + "job-edit"))
-routes.get('/profile', (req, res) => res.render(views + "profile", { profile }))
-routes.get('/job', (req, res) => res.render(views + "job"))
-// rota para recebimento do post na page job, (SALVAR) button. 
-routes.post('/job', (req, res) => {
-  // estrutura do dado vindo do req.body => { name: 'asd', 'daily-hours': '0.4', 'total-hours': '3' }
-  const lastId = jobs[jobs.length - 1]?.id || 1;
-
-  jobs.push({
-    id: lastId + 1,
-    name: req.body.name,
-    "daily-hours": req.body["daily-hours"],
-    "total-hours": req.body["total-hours"],
-    created_at: Date.now() // atribuindo data de hoje
-  })
-  return res.redirect('/')
-})
+routes.get('/profile', Profile.controllers.index)
+routes.post('/profile', Profile.controllers.update) // postando atualização do profile 
 
 
 
