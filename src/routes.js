@@ -11,7 +11,8 @@ const profile = {
   "monthly-budget": 3000,
   "days-per-week": 5,
   "hours-per-day": 5,
-  "vacation-per-day": 4
+  "vacation-per-day": 4,
+  "value-hour": 75
 }
 //array que armazena os dados vindos do req.body
 const jobs = [
@@ -19,7 +20,7 @@ const jobs = [
     id: 1,
     name: "Pizzaria Gulozo",
     "daily-hours": 2,
-    "total-hours": 60,
+    "total-hours": 3,
     created_at: Date.now(),
   },
   {
@@ -31,27 +32,46 @@ const jobs = [
   }
 ]
 
-// req, res
+function remainingDays(job) {
+  // function que calcula quantos dias restam para a entrega do projeto 
+  // calculo de tempo restante
+  const remainingDays = (job["total-hours"] / job["daily-hours"]).toFixed() // .toFixed() arredondamento do resultado 
+
+  const createdDate = new Date(job.created_at)
+  const dueDay = createdDate.getDate() + Number(remainingDays)
+  const dueDateInMs = createdDate.setDate(dueDay)
+
+  const timeDiffInMs = dueDateInMs - Date.now()
+  // transformar Ms em remainingDays
+  const dayInMs = 1000 * 60 * 60 * 24
+  const dayDiff = Math.floor(timeDiffInMs / dayInMs)
+
+  // restam x days 
+  return dayDiff
+}
+
+
 routes.get('/', (req, res) => {
+  // req, res
 
-  // .map() pega cada item no estilo for each e retorna um item novo 
   const updatedJobs = jobs.map((job) => {
+    // .map() pega cada item no estilo for each e retorna um item novo 
     // ajustes no job
-    // calculo de tempo restante
-    const remainingDays = (job["total-hours"] / job["daily-hours"]).toFixed() // .toFixed() arredondamento do resultado 
+    const remaining = remainingDays(job)
+    const status = remaining <= 0 ? 'done' : 'progress'  //if ternário para retornar o status 
 
-    const createdDate = new Date(job.created_at)
-    const dueDay = createdDate.getDate() + Number(remainingDays)
-    const dueDate = createdDate.getDate() + Number(remainingDays)
-    //const dueDate = createdDate.setDate
-
-    return job
+    return {
+      ...job,
+      remaining,
+      status,
+      budget: profile["value-hour"] * job["total-hours"],
+    }
   })
 
-
-  return res.render(views + "index", { jobs })
+  return res.render(views + "index", { jobs: updatedJobs })
 
 })
+
 routes.get('/job/edit', (req, res) => res.render(views + "job-edit"))
 routes.get('/profile', (req, res) => res.render(views + "profile", { profile }))
 routes.get('/job', (req, res) => res.render(views + "job"))
