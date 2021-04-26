@@ -14,21 +14,40 @@ const profile = {
   "vacation-per-day": 4
 }
 //array que armazena os dados vindos do req.body
-const jobs = []
+const jobs = [
+  {
+    id: 1,
+    name: "Pizzaria Gulozo",
+    "daily-hours": 2,
+    "total-hours": 60,
+    created_at: Date.now()
+  },
+  {
+    id: 2,
+    name: "Projexo X",
+    "daily-hours": 3,
+    "total-hours": 47,
+    created_at: Date.now()
+  }
+]
 
 // req, res
-routes.get('/', (req, res) => res.render(views + "index"))
+routes.get('/', (req, res) => res.render(views + "index", { jobs }))
 routes.get('/job', (req, res) => res.render(views + "job"))
 routes.get('/job/edit', (req, res) => res.render(views + "job-edit"))
 routes.get('/profile', (req, res) => res.render(views + "profile", { profile }))
-
 // rota para recebimento do post na page job, (SALVAR) button. 
 routes.post('/job', (req, res) => {
   // estrutura do dado vindo do req.body => { name: 'asd', 'daily-hours': '0.4', 'total-hours': '3' }
-  const job = req.body
-  job.created = Date.now() // atribuindo uma nova data
+  const lastId = jobs[jobs.length - 1]?.id || 1;
 
-  jobs.push(req.body)
+  jobs.push({
+    id: lastId + 1,
+    name: req.body.name,
+    "daily-hours": req.body["daily-hours"],
+    "total-hours": req.body["total-hours"],
+    created_at: Date.now() // atribuindo data de hoje
+  })
   return res.redirect('/')
 })
 
