@@ -20,22 +20,41 @@ const jobs = [
     name: "Pizzaria Gulozo",
     "daily-hours": 2,
     "total-hours": 60,
-    created_at: Date.now()
+    created_at: Date.now(),
   },
   {
     id: 2,
     name: "Projexo X",
     "daily-hours": 3,
     "total-hours": 47,
-    created_at: Date.now()
+    created_at: Date.now(),
   }
 ]
 
 // req, res
-routes.get('/', (req, res) => res.render(views + "index", { jobs }))
-routes.get('/job', (req, res) => res.render(views + "job"))
+routes.get('/', (req, res) => {
+
+  // .map() pega cada item no estilo for each e retorna um item novo 
+  const updatedJobs = jobs.map((job) => {
+    // ajustes no job
+    // calculo de tempo restante
+    const remainingDays = (job["total-hours"] / job["daily-hours"]).toFixed() // .toFixed() arredondamento do resultado 
+
+    const createdDate = new Date(job.created_at)
+    const dueDay = createdDate.getDate() + Number(remainingDays)
+    const dueDate = createdDate.getDate() + Number(remainingDays)
+    //const dueDate = createdDate.setDate
+
+    return job
+  })
+
+
+  return res.render(views + "index", { jobs })
+
+})
 routes.get('/job/edit', (req, res) => res.render(views + "job-edit"))
 routes.get('/profile', (req, res) => res.render(views + "profile", { profile }))
+routes.get('/job', (req, res) => res.render(views + "job"))
 // rota para recebimento do post na page job, (SALVAR) button. 
 routes.post('/job', (req, res) => {
   // estrutura do dado vindo do req.body => { name: 'asd', 'daily-hours': '0.4', 'total-hours': '3' }

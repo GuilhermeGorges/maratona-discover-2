@@ -76,12 +76,15 @@
       <h1 class="sr-only">Trabalhos</h1>
 
       <div class="cards">
+        <!-- forEach() // estrutura de repetição para cada item dentro do array "job" -->
         <% jobs.forEach((job)=> { %>
 
-          <div class="card progress" data-id="1">
-            <div class="id column">1</div>
+          <div class="card progress" data-id="<%= job.id %>">
+            <div class="id column">
+              <%= job.id %>
+            </div>
             <div class="name column">
-              Pizzaria Guloso
+              <%= job.name %>
             </div>
             <div class="deadline column">
               <span>Prazo</span>
@@ -92,7 +95,7 @@
               <p>R$ 4500,00</p>
             </div>
             <div class="status badge column">
-              Em andamento
+              Em andament
             </div>
             <div class="actions column flex">
               <p class="sr-only">Ações</p>
