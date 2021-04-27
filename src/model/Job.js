@@ -1,5 +1,5 @@
 //arquivo responsável pelos dados de model de  Job
-data: [
+let data = [
   //array que armazena os dados vindos do req.body
   {
     id: 1,
@@ -15,4 +15,10 @@ data: [
     "total-hours": 47,
     created_at: Date.now(),
   }
-]
+];
+
+module.exports = {
+  get() {
+    return data
+  }
+}
