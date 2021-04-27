@@ -71,7 +71,7 @@ const Job = {
           ...job,
           remaining,
           status,
-          budget: Profile.data["value-hour"] * job["total-hours"],
+          budget: Job.services.calculateBudget(job, Profile.data["value-hour"])
         }
       })
 
@@ -82,7 +82,7 @@ const Job = {
     },
     save(req, res) {
       // estrutura do dado vindo do req.body => { name: 'asd', 'daily-hours': '0.4', 'total-hours': '3' }
-      const lastId = Job.data[Job.data.length - 1]?.id || 1;
+      const lastId = Job.data[Job.data.length - 1]?.id || 0;
 
       Job.data.push({
         id: lastId + 1,
@@ -91,6 +91,50 @@ const Job = {
         "total-hours": req.body["total-hours"],
         created_at: Date.now() // atribuindo data de hoje
       })
+      return res.redirect('/')
+    },
+    show(req, res) {
+
+      const jobId = req.params.id
+
+      const job = Job.data.find(job => Number(job.id) === Number(jobId)) // find() faz a comparação entre os dois IDs e se for igual retorna o conteúdo daquele ID
+
+      if (!job) {
+        return res.send('JOB NOT FOUND!')
+      }
+
+      job.budget = Job.services.calculateBudget(job, Profile.data["value-hour"])
+
+      return res.render(views + "job-edit", { job })
+    },
+    update(req, res) {
+      const jobId = req.params.id
+      const job = Job.data.find(job => Number(job.id) === Number(jobId))
+      if (!job) {
+        return res.send('JOB NOT FOUND!')
+      }
+
+      const updatedJob = {
+        ...job, //quando á mais itens precisamos espalhar o conteúdo
+        name: req.body.name,
+        "total-hours": req.body["total-hours"],
+        "daily-hours": req.body["daily-hours"],
+      }
+
+      Job.data = Job.data.map(job => {
+        if (Number(job.id) === Number(jobId)) {
+          job = updatedJob
+        }
+
+        return job
+      })
+      res.redirect('/job/' + jobId)
+    },
+    delete(req, res) {
+      const jobId = req.params.id
+
+      Job.data = Job.data.filter(job => Number(job.id) !== Number(jobId)) // filter remove o tal situação acontecer (job.id ser igual jobId)
+
       return res.redirect('/')
     },
   },
@@ -111,14 +155,17 @@ const Job = {
 
       // restam x days 
       return dayDiff
-    }
+    },
+    calculateBudget: (job, valueHour) => valueHour * job["total-hours"]
   }
 }
 
 routes.get('/', Job.controllers.index)
 routes.get('/job', Job.controllers.create)
 routes.post('/job', Job.controllers.save)// rota para recebimento do post na page job, (SALVAR) button. 
-routes.get('/job/edit', (req, res) => res.render(views + "job-edit"))
+routes.get('/job/:id', Job.controllers.show)
+routes.post('/job/:id', Job.controllers.update)// postando atualização do projeto 
+routes.post('/job/delete/:id', Job.controllers.delete)// delete project 
 routes.get('/profile', Profile.controllers.index)
 routes.post('/profile', Profile.controllers.update) // postando atualização do profile 
 
