@@ -1,45 +1,6 @@
 const express = require('express');// biblioteca para criar o servidor 
 const routes = express.Router();// é uma parte do express que vai criar os caminhos 
-const views = __dirname + "/views/";// caminho base para o views
-
-const Profile = {// criando um novo perfil 
-  data: {
-    name: "Guilherme",
-    avatar: "https://github.com/GuilhermeGorges.png",
-    "monthly-budget": 3000,
-    "days-per-week": 5,
-    "hours-per-day": 5,
-    "vacation-per-day": 4,
-    "value-hour": 75
-  },
-  controllers: {
-    index(req, res) {
-      return res.render(views + "profile", { profile: Profile.data })
-    },
-    update(req, res) {
-      // req body para pegar os dados 
-      const data = req.body
-      // definir quantas semanas tem em um ano 
-      const weeksPerYear = 52
-      // remover as semanas de férias do ano, para pegar quantas semanas tem em um mes
-      const weeksPerMonth = (weeksPerYear - data["vacation-per-year"]) / 12
-      // total de horas trabalhadas na semana 
-      const weekTotalHours = data["hours-per-day"] * data["days-per-week"]
-      // horas trabalhadas no mes 
-      const monthTotalHours = weekTotalHours * weeksPerMonth
-      // qual será o valor da minha hora?
-      const valueHour = data["value-hour"] = data["monthly-budget"] / monthTotalHours
-
-      Profile.data = {
-        ...Profile.data,
-        ...req.body,
-        "value-hour": valueHour,
-      }
-
-      return res.redirect('/profile')
-    },
-  },
-}
+const ProfileController = require('./controllers/ProfileController') //chamando o arquivo da pasta controllers 
 
 const Job = {
   data: [
@@ -58,7 +19,6 @@ const Job = {
       "total-hours": 47,
       created_at: Date.now(),
     }
-
   ],
   controllers: {
     index(req, res) {
@@ -75,10 +35,10 @@ const Job = {
         }
       })
 
-      return res.render(views + "index", { jobs: updatedJobs })
+      return res.render("index", { jobs: updatedJobs })
     },
     create(req, res) {
-      return res.render(views + "job")
+      return res.render("job")
     },
     save(req, res) {
       // estrutura do dado vindo do req.body => { name: 'asd', 'daily-hours': '0.4', 'total-hours': '3' }
@@ -105,7 +65,7 @@ const Job = {
 
       job.budget = Job.services.calculateBudget(job, Profile.data["value-hour"])
 
-      return res.render(views + "job-edit", { job })
+      return res.render("job-edit", { job })
     },
     update(req, res) {
       const jobId = req.params.id
@@ -138,26 +98,6 @@ const Job = {
       return res.redirect('/')
     },
   },
-  services: {
-    remainingDays(job) {
-      // function que calcula quantos dias restam para a entrega do projeto 
-      // calculo de tempo restante
-      const remainingDays = (job["total-hours"] / job["daily-hours"]).toFixed() // .toFixed() arredondamento do resultado 
-
-      const createdDate = new Date(job.created_at)
-      const dueDay = createdDate.getDate() + Number(remainingDays)
-      const dueDateInMs = createdDate.setDate(dueDay)
-
-      const timeDiffInMs = dueDateInMs - Date.now()
-      // transformar Ms em remainingDays
-      const dayInMs = 1000 * 60 * 60 * 24
-      const dayDiff = Math.floor(timeDiffInMs / dayInMs)
-
-      // restam x days 
-      return dayDiff
-    },
-    calculateBudget: (job, valueHour) => valueHour * job["total-hours"]
-  }
 }
 
 routes.get('/', Job.controllers.index)
@@ -166,11 +106,9 @@ routes.post('/job', Job.controllers.save)// rota para recebimento do post na pag
 routes.get('/job/:id', Job.controllers.show)
 routes.post('/job/:id', Job.controllers.update)// postando atualização do projeto 
 routes.post('/job/delete/:id', Job.controllers.delete)// delete project 
-routes.get('/profile', Profile.controllers.index)
-routes.post('/profile', Profile.controllers.update) // postando atualização do profile 
+routes.get('/profile', ProfileController.index)
+routes.post('/profile', ProfileController.update) // postando atualização do profile 
 
 
 
 module.exports = routes;
-
-//"https://scontent.fbnu4-1.fna.fbcdn.net/v/t31.18172-8/18738846_260016597807794_5882782853619273723_o.jpg?_nc_cat=107&ccb=1-3&_nc_sid=09cbfe&_nc_ohc=DwB2DRSR5tcAX9wWqZc&_nc_ht=scontent.fbnu4-1.fna&oh=f4576b391b2aefa775198ea00e20488c&oe=60A3ED31"
