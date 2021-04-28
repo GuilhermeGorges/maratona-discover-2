@@ -9,16 +9,18 @@ module.exports = {
   save(req, res) {
     // estrutura do dado vindo do req.body => { name: 'asd', 'daily-hours': '0.4', 'total-hours': '3' }
     const jobs = Job.get();
-
     const lastId = jobs[jobs.length - 1]?.id || 0;
 
-    jobs.push({
-      id: lastId + 1,
-      name: req.body.name,
-      "daily-hours": req.body["daily-hours"],
-      "total-hours": req.body["total-hours"],
-      created_at: Date.now() // atribuindo data de hoje
-    })
+    Job.create(
+      {
+        id: lastId + 1,
+        name: req.body.name,
+        "daily-hours": req.body["daily-hours"],
+        "total-hours": req.body["total-hours"],
+        created_at: Date.now() // atribuindo data de hoje
+      }
+    );
+
     return res.redirect('/')
   },
   show(req, res) {
@@ -69,5 +71,5 @@ module.exports = {
     const jobId = req.params.id
     Job.delete(jobId)
     return res.redirect('/')
-  },
+  }
 };

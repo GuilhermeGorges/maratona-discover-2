@@ -26,5 +26,8 @@ module.exports = {
   },
   delete(id) {
     data = data.filter(job => Number(job.id) !== Number(id)) // filter remove o tal situação acontecer (job.id ser igual jobId)
+  },
+  create(newJob) {
+    data.push(newJob)
   }
 }
