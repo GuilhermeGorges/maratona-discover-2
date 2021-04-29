@@ -3,9 +3,9 @@ let data = [
   //array que armazena os dados vindos do req.body
   {
     id: 1,
-    name: "Pizzaria Gulozo",
+    name: "Pizzaria Guloso",
     "daily-hours": 2,
-    "total-hours": 0,
+    "total-hours": 1,
     created_at: Date.now(),
   },
   {
@@ -16,7 +16,6 @@ let data = [
     created_at: Date.now(),
   }
 ];
-
 module.exports = {
   get() {
     return data
