@@ -1,4 +1,6 @@
 //arquivo responsável pelos dados de model de  Job
+const Database = require('../db/config')
+
 let data = [
   //array que armazena os dados vindos do req.body
   {
@@ -17,7 +19,15 @@ let data = [
   }
 ];
 module.exports = {
-  get() {
+  async get() {
+    const db = await Database()
+
+    const data2 = await db.all(`SELECT * FROM jobs
+    
+    `)
+
+    await db.close()
+
     return data
   },
   update(newJob) {

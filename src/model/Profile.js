@@ -1,5 +1,4 @@
 //arquivo responsável pelos dados de model Profile
-const { name } = require('ejs')
 const Database = require('../db/config')
 
 module.exports = {
@@ -20,8 +19,20 @@ module.exports = {
       "value-hour": data.value_hour
     };
   },
-  update(newData) {
-    data = newData;
+  async update(newData) {
+    const db = await Database()
+
+    await db.run(`UPDATE profile SET
+    name = "${newData.name}", 
+    avatar = "${newData.avatar}",
+    monthly_budget = ${newData["monthly-budget"]},
+    days_per_week = ${newData["days-per-week"]},
+    hours_per_day = ${newData["hours-per-day"]},
+    vacation_per_year = ${newData["vacation-per-year"]},
+    value_hour = ${newData["value-hour"]} 
+    `)
+
+    await db.close()
   }
 }
 
