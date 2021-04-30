@@ -6,9 +6,9 @@ module.exports = {
   create(req, res) {
     return res.render("job")
   },
-  save(req, res) {
+  async save(req, res) {
     // estrutura do dado vindo do req.body => { name: 'asd', 'daily-hours': '0.4', 'total-hours': '3' }
-    const jobs = Job.get();
+    const jobs = await Job.get();
     const lastId = jobs[jobs.length - 1]?.id || 0;
 
     Job.create(
@@ -23,11 +23,11 @@ module.exports = {
 
     return res.redirect('/')
   },
-  show(req, res) {
-    const jobs = Job.get();
-    const profile = Profile.get();
-
+  async show(req, res) {
     const jobId = req.params.id
+    const jobs = await Job.get();
+    const profile = await Profile.get();
+
 
     const job = jobs.find(job => Number(job.id) === Number(jobId)) // find() faz a comparação entre os dois IDs e se for igual retorna o conteúdo daquele ID
 
@@ -39,8 +39,8 @@ module.exports = {
 
     return res.render("job-edit", { job })
   },
-  update(req, res) {
-    const jobs = Job.get();
+  async update(req, res) {
+    const jobs = await Job.get();
 
     const jobId = req.params.id
     const job = jobs.find(job => Number(job.id) === Number(jobId))

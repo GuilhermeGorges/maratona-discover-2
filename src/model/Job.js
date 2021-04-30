@@ -1,34 +1,21 @@
 //arquivo responsável pelos dados de model de  Job
 const Database = require('../db/config')
 
-let data = [
-  //array que armazena os dados vindos do req.body
-  {
-    id: 1,
-    name: "Pizzaria Guloso",
-    "daily-hours": 2,
-    "total-hours": 1,
-    created_at: Date.now(),
-  },
-  {
-    id: 2,
-    name: "Projexo X",
-    "daily-hours": 3,
-    "total-hours": 47,
-    created_at: Date.now(),
-  }
-];
 module.exports = {
   async get() {
     const db = await Database()
 
-    const data2 = await db.all(`SELECT * FROM jobs
-    
-    `)
+    const jobs = await db.all(`SELECT * FROM jobs`)
 
     await db.close()
 
-    return data
+    return jobs.map(job => ({
+      id: job.id,
+      name: job.name,
+      "daily-hours": job.daily_hours,
+      "total-hours": job.total_hours,
+      created_at: job.created_at
+    }))
   },
   update(newJob) {
     data = newJob
@@ -37,6 +24,10 @@ module.exports = {
     data = data.filter(job => Number(job.id) !== Number(id)) // filter remove o tal situação acontecer (job.id ser igual jobId)
   },
   create(newJob) {
-    data.push(newJob)
+    const db = await Database()
+
+    await db.run() parei aqui!!!
+
+    await db.close()
   }
 }
