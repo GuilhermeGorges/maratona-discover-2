@@ -7,19 +7,12 @@ module.exports = {
     return res.render("job")
   },
   async save(req, res) {
-    // estrutura do dado vindo do req.body => { name: 'asd', 'daily-hours': '0.4', 'total-hours': '3' }
-    const jobs = await Job.get();
-    const lastId = jobs[jobs.length - 1]?.id || 0;
-
-    Job.create(
-      {
-        id: lastId + 1,
-        name: req.body.name,
-        "daily-hours": req.body["daily-hours"],
-        "total-hours": req.body["total-hours"],
-        created_at: Date.now() // atribuindo data de hoje
-      }
-    );
+    await Job.create({
+      name: req.body.name,
+      "daily-hours": req.body["daily-hours"],
+      "total-hours": req.body["total-hours"],
+      created_at: Date.now() // atribuindo data de hoje
+    });
 
     return res.redirect('/')
   },
